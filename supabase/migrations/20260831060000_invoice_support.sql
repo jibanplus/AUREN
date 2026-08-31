@@ -1,0 +1,3 @@
+-- Invoice support is generated from the existing orders.items, pricing,
+-- customer/shipping and status fields. No destructive schema change is required.
+-- This migration intentionally contains no ALTER TABLE so existing orders remain untouched.
