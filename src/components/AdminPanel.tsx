@@ -706,7 +706,9 @@ function ProductEditor({ product, suppliers, onSave, onCancel }: { product: Prod
       setForm({ ...form, image: url, image_urls: [...form.image_urls, url] });
       toast('Image uploaded successfully', 'success');
     } catch (error) {
-      toast('Failed to upload image', 'error');
+      console.error('Image upload error:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to upload image';
+      toast(msg, 'error');
     } finally {
       setUploading(false);
     }
@@ -1194,8 +1196,8 @@ function IndiaMARTTab() {
       const newProduct: Product = {
         id: crypto.randomUUID(),
         name: result.name,
-        image: result.image,
-        image_urls: [result.image],
+        image: result.image || 'https://via.placeholder.com/400x400?text=No+Image',
+        image_urls: result.image ? [result.image] : ['https://via.placeholder.com/400x400?text=No+Image'],
         original_price: result.supplier_price,
         selling_price: Math.round(result.supplier_price * 1.5), // Default 50% markup
         supplier_id: supplierId,
@@ -1211,12 +1213,14 @@ function IndiaMARTTab() {
       };
 
       await upsertProduct(newProduct);
+      console.log('Product imported successfully:', newProduct);
       toast('Product imported successfully', 'success');
-      
+
       // Remove from results
       setResults(results.filter(r => r.id !== result.id));
     } catch (err) {
-      toast('Failed to import product', 'error');
+      console.error('Failed to import product:', err);
+      toast(err instanceof Error ? err.message : 'Failed to import product', 'error');
     } finally {
       setImporting(null);
     }

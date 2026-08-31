@@ -1,10 +1,22 @@
-import { ShoppingBag, Lock, Instagram, Twitter, Facebook } from 'lucide-react';
+import { ShoppingBag, Lock, Instagram, Twitter, Facebook, Youtube, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { footerConfig } from '@/config/footer';
 
 interface FooterProps {
   onAdminClick: () => void;
 }
 
+// Icon mapping for social media
+const iconMap: Record<string, any> = {
+  Instagram,
+  Twitter,
+  Facebook,
+  Youtube,
+  Linkedin
+};
+
 export function Footer({ onAdminClick }: FooterProps) {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-ink-900 text-ink-300 mt-auto">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -16,53 +28,88 @@ export function Footer({ onAdminClick }: FooterProps) {
                 <ShoppingBag className="h-5 w-5 text-brand-300" />
               </div>
               <span className="font-display text-2xl font-semibold text-white">
-                AUREN
+                {footerConfig.brand.name}
               </span>
             </div>
-            <p className="text-sm text-ink-400 max-w-sm">
-              Premium fashion & apparel for the modern wardrobe. Shop the latest trends with
-              Cash on Delivery across India.
+            <p className="text-sm text-ink-400 max-w-sm mb-2">
+              {footerConfig.brand.description}
             </p>
-            <div className="flex items-center gap-3 mt-5">
-              {[Instagram, Twitter, Facebook].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-ink-400 transition-colors hover:bg-white/10 hover:text-white"
-                  aria-label="Social link"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+            <p className="text-xs text-ink-500 mb-5">
+              {footerConfig.brand.tagline}
+            </p>
+
+            {/* Social Media Links */}
+            <div className="flex items-center gap-3 mb-6">
+              {footerConfig.socialLinks.map((social, i) => {
+                const Icon = iconMap[social.icon];
+                if (!Icon) return null;
+                return (
+                  <a
+                    key={i}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-ink-400 transition-all hover:bg-white/10 hover:text-white hover:scale-110"
+                    aria-label={social.name}
+                    title={social.name}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                );
+              })}
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-2 text-sm">
+              {footerConfig.contact.email && (
+                <div className="flex items-center gap-2 text-ink-400">
+                  <Mail className="h-4 w-4" />
+                  <a href={`mailto:${footerConfig.contact.email}`} className="hover:text-white transition-colors">
+                    {footerConfig.contact.email}
+                  </a>
+                </div>
+              )}
+              {footerConfig.contact.phone && (
+                <div className="flex items-center gap-2 text-ink-400">
+                  <Phone className="h-4 w-4" />
+                  <a href={`tel:${footerConfig.contact.phone}`} className="hover:text-white transition-colors">
+                    {footerConfig.contact.phone}
+                  </a>
+                </div>
+              )}
+              {footerConfig.contact.address && (
+                <div className="flex items-center gap-2 text-ink-400">
+                  <MapPin className="h-4 w-4" />
+                  <span>{footerConfig.contact.address}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-3">Shop</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#shop" className="hover:text-white transition-colors">All Products</a></li>
-              <li><a href="#shop" className="hover:text-white transition-colors">Men</a></li>
-              <li><a href="#shop" className="hover:text-white transition-colors">Women</a></li>
-              <li><a href="#shop" className="hover:text-white transition-colors">Trendy</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-3">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Shipping Info</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Returns</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">FAQs</a></li>
-            </ul>
-          </div>
+          {/* Dynamic Footer Sections */}
+          {footerConfig.sections.map((section, index) => (
+            <div key={index}>
+              <h4 className="text-sm font-semibold text-white mb-3">{section.title}</h4>
+              <ul className="space-y-2 text-sm">
+                {section.links.map((link, linkIndex) => (
+                  <li key={linkIndex}>
+                    <a
+                      href={link.url}
+                      className="hover:text-white transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-ink-500">
-            © {new Date().getFullYear()} AUREN. All rights reserved.
+            {footerConfig.copyright.showYear && `© ${currentYear} `}{footerConfig.copyright.text}
           </p>
           <button
             onClick={onAdminClick}

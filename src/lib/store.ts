@@ -397,7 +397,7 @@ export async function deleteSupplier(id: string): Promise<void> {
 // ============ IMAGE UPLOAD ============
 export async function uploadProductImage(file: File): Promise<string> {
   if (!isSupabaseConfigured || !supabase) {
-    throw new Error('Supabase not configured');
+    throw new Error('Supabase not configured. Please check your environment variables.');
   }
 
   const fileExt = file.name.split('.').pop();
@@ -413,6 +413,10 @@ export async function uploadProductImage(file: File): Promise<string> {
     });
 
   if (uploadError) {
+    console.error('Image upload error:', uploadError);
+    if (uploadError.message.includes('bucket not found') || uploadError.message.includes('Bucket not found')) {
+      throw new Error('Storage bucket "product-images" not found. Please run the storage migration in Supabase SQL Editor.');
+    }
     throw uploadError;
   }
 

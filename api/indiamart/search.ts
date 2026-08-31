@@ -48,6 +48,7 @@ export default async function handler(req: any, res: any) {
     }
 
     if (!ANAKIN_API_KEY) {
+      console.error('ANAKIN_API_KEY environment variable is not set');
       return res.status(500).json({ error: 'Server configuration error: API key not configured' });
     }
 
@@ -108,14 +109,15 @@ export default async function handler(req: any, res: any) {
       let price = 0;
       let supplierName = 'Unknown';
       let description = result.snippet?.substring(0, 200) || undefined;
-      
+      let imageUrl = '';
+
       // Extract price from title (look for ₹ symbol)
       const titlePriceMatch = result.title?.match(/₹\s*[\d,]+/g);
       if (titlePriceMatch && titlePriceMatch.length > 0) {
         const priceStr = titlePriceMatch[0].replace(/[₹,\s]/g, '');
         price = parseFloat(priceStr) || 0;
       }
-      
+
       // Extract supplier name from title (usually after last hyphen)
       if (result.title) {
         const titleParts = result.title.split('-');
@@ -125,11 +127,32 @@ export default async function handler(req: any, res: any) {
           supplierName = supplierName.replace(/\|.*$/, '').trim();
         }
       }
-      
+
+      // Try to extract image from the result
+      if (result.image) {
+        imageUrl = result.image;
+      } else if (result.thumbnail) {
+        imageUrl = result.thumbnail;
+      } else if (result.img) {
+        imageUrl = result.img;
+      } else if (result.pagemap?.cse_image?.[0]?.src) {
+        imageUrl = result.pagemap.cse_image[0].src;
+      } else if (result.pagemap?.cse_thumbnail?.[0]?.src) {
+        imageUrl = result.pagemap.cse_thumbnail[0].src;
+      }
+
+      // If no image found, try to extract from snippet/description
+      if (!imageUrl && result.snippet) {
+        const imageMatch = result.snippet.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif)/i);
+        if (imageMatch) {
+          imageUrl = imageMatch[0];
+        }
+      }
+
       results.push({
         id: result.url || '',
         name: result.title || '',
-        image: '',
+        image: imageUrl,
         supplier_name: supplierName,
         supplier_price: price,
         category: undefined,

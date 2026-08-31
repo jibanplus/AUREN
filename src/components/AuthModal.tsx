@@ -70,7 +70,7 @@ export function AuthModal({ open, onClose, initialMode = 'login' }: AuthModalPro
   const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
   const sendOtpEmail = async (targetEmail: string, code: string) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Authentication service is not configured. Please contact support.');
     const { error } = await supabase.auth.signInWithOtp({
       email: targetEmail,
       options: { shouldCreateUser: false, data: { otp_code: code } },
@@ -158,7 +158,8 @@ export function AuthModal({ open, onClose, initialMode = 'login' }: AuthModalPro
       setOtpSent(true);
       setInfoMessage(`A 6-digit OTP has been sent to ${email.trim()}. Enter it below to verify.`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to send OTP';
+      const msg = err instanceof Error ? err.message : 'Failed to send OTP. Please try again.';
+      console.error('OTP send error:', err);
       toast(msg, 'error');
     } finally {
       setLoading(false);
@@ -227,10 +228,12 @@ export function AuthModal({ open, onClose, initialMode = 'login' }: AuthModalPro
       }
       const code = generateOtp();
       setOtpHash(code);
+      await sendOtpEmail(targetEmail, code);
       setOtpSent(true);
       setInfoMessage(`A 6-digit OTP has been sent to ${targetEmail}. Enter it below to reset your password.`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong';
+      const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      console.error('Forgot password error:', err);
       toast(msg, 'error');
     } finally {
       setLoading(false);
@@ -285,7 +288,8 @@ export function AuthModal({ open, onClose, initialMode = 'login' }: AuthModalPro
       setOtp('');
       setIdentifier('');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to reset password';
+      const msg = err instanceof Error ? err.message : 'Failed to reset password. Please try again.';
+      console.error('Password reset error:', err);
       toast(msg, 'error');
     } finally {
       setLoading(false);
